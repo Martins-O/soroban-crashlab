@@ -4,12 +4,14 @@ import * as React from 'react';
 import { useState, useCallback } from 'react';
 import { FuzzingRun } from '../../app/types';
 import {
+  bulkActionCapability,
   canPerformBulkAction,
   getBulkActionDescription,
   type BulkActionType,
 } from '../../app/runs-bulk-actions-utils';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { getConfirmDialogConfig } from '../../components/confirm-dialog-utils';
+import { explainGate, requiredRoleForCapability, useEffectiveAccess } from '../../lib/permissions';
 
 export type BulkAction = BulkActionType;
 
@@ -40,8 +42,19 @@ const BulkActionsForRuns: React.FC<BulkActionsProps> = ({
   const [actionData, setActionData] = useState<Record<string, string | boolean>>({});
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
+  // Server capabilities gate the destructive actions (#1880).
+  const { status: accessStatus, role, can: holdsCapability } = useEffectiveAccess();
+  const actionAllowed = useCallback(
+    (action: BulkActionType) => {
+      const capability = bulkActionCapability(action);
+      return capability === null || holdsCapability(capability);
+    },
+    [holdsCapability],
+  );
+
   const handleActionSelect = useCallback(
     (action: BulkActionType) => {
+      if (!actionAllowed(action)) return;
       setIsActionMenuOpen(false);
 
       // Intercept delete to show confirmation dialog
@@ -60,14 +73,15 @@ const BulkActionsForRuns: React.FC<BulkActionsProps> = ({
       onAction(action, runIds);
       setSelectedAction(null);
     },
-    [selectedRuns, onAction],
+    [selectedRuns, onAction, actionAllowed],
   );
 
   const handleDeleteConfirm = useCallback(() => {
+    if (!actionAllowed('delete')) return;
     const runIds = selectedRuns.map((run) => run.id);
     onAction('delete', runIds);
     setDeleteConfirmOpen(false);
-  }, [selectedRuns, onAction]);
+  }, [selectedRuns, onAction, actionAllowed]);
 
   const handleDeleteCancel = useCallback(() => {
     setDeleteConfirmOpen(false);
@@ -228,20 +242,30 @@ const BulkActionsForRuns: React.FC<BulkActionsProps> = ({
                 role="menu"
                 style={{ padding: '4px 0' }}
               >
-                {BULK_ACTIONS.map((action) => (
-                  <button
-                    key={action}
-                    type="button"
-                    role="menuitem"
-                    onClick={() => handleActionSelect(action)}
-                    disabled={!canPerformBulkAction(action, selectedRuns)}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex flex-col"
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
-                  >
-                    <span className="font-medium capitalize">{action}</span>
-                    <span className="text-xs text-meta">{getBulkActionDescription(action)}</span>
-                  </button>
-                ))}
+                {BULK_ACTIONS.map((action) => {
+                  const capability = bulkActionCapability(action);
+                  const allowed = actionAllowed(action);
+                  const requiredRole = capability ? requiredRoleForCapability(capability) : null;
+                  return (
+                    <button
+                      key={action}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => handleActionSelect(action)}
+                      disabled={!canPerformBulkAction(action, selectedRuns) || !allowed}
+                      title={!allowed && capability ? explainGate(capability, accessStatus, role) : undefined}
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex flex-col"
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+                    >
+                      <span className="font-medium capitalize">{action}</span>
+                      <span className="text-xs text-meta">
+                        {allowed
+                          ? getBulkActionDescription(action)
+                          : `Requires the ${requiredRole ?? 'maintainer'} role.`}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
