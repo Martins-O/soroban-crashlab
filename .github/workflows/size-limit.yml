@@ -66,6 +66,13 @@ jobs:
         if: always()
         run: node apps/web/scripts/analyze-bundles.mjs
 
+      # Enforce the committed per-route budget file (W5-D09 / #1881). This is
+      # the ratchet: first-load JS may not grow, and a route missing from the
+      # budget file fails until `pnpm budget:update` records it.
+      - name: Check per-route performance budgets
+        if: always()
+        run: pnpm --dir apps/web run perf:check
+
       # Append report to GitHub Step Summary
       - name: Append Bundle Analysis to Step Summary
         if: always()
