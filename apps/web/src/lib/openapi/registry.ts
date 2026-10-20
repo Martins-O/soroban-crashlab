@@ -52,6 +52,10 @@ export const ROUTE_REGISTRY: RouteRegistryEntry[] = [
     scopes: ['read'],
     description: 'Cursor pagination via ?cursor=<opaque>&limit=<n> (default 20). Envelope: { data: { runs, total, nextCursor, hasMore }, total }.',
   }),
+  r('GET', '/api/runs/search', 'bearer', 'Search fuzzing runs (ranked, bounded)', ['runs'], ['UNAUTHORIZED', 'VALIDATION_ERROR'], {
+    scopes: ['read'],
+    description: 'Ranked server-side search over run identifiers, signatures, contracts, and tags. ?q=<query>&limit=<1-200> (default 50). Results are capped at 200 with a truncation hint.',
+  }),
   r('POST', '/api/runs', 'bearer-or-maintainer', 'Create a fuzzing run', ['runs'], ['VALIDATION_ERROR', 'UNAUTHORIZED', 'FORBIDDEN'], {
     scopes: ['write'],
   }),

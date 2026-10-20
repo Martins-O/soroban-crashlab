@@ -13,6 +13,7 @@ const KNOWN_ROUTES = [
   'GET /api/health',
   'GET /api/health/metrics',
   'GET /api/runs',
+  'GET /api/runs/search',
   'POST /api/runs',
   'GET /api/runs/{id}',
   'DELETE /api/runs/{id}',

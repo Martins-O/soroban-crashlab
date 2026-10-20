@@ -115,6 +115,31 @@ export const RunsListResponseSchema = z.object({
 export type RunsListRequest = z.infer<typeof RunsListRequestSchema>;
 export type RunsListResponse = z.infer<typeof RunsListResponseSchema>;
 
+export const RunSearchHitSchema = z.object({
+  run: FuzzingRunSchema,
+  score: z.number(),
+  matchedFields: z.array(z.object({ field: z.string(), value: z.string() })),
+});
+
+export const RunSearchQueryErrorSchema = z.object({
+  message: z.string(),
+  position: z.number(),
+  expected: z.array(z.string()),
+});
+
+export const RunSearchResponseSchema = z.object({
+  results: z.array(RunSearchHitSchema),
+  total: z.number(),
+  truncated: z.boolean(),
+  hint: z.string().optional(),
+  error: RunSearchQueryErrorSchema.optional(),
+  indexed: z.number(),
+  tookMs: z.number(),
+});
+
+export type RunSearchHit = z.infer<typeof RunSearchHitSchema>;
+export type RunSearchResponse = z.infer<typeof RunSearchResponseSchema>;
+
 // ---------------------------------------------------------------------------
 // GET /api/runs/[id] — response (id comes from path, no body schema needed)
 // ---------------------------------------------------------------------------

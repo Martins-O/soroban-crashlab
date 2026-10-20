@@ -8,8 +8,10 @@ import type { ZodIssue, ZodTypeAny } from 'zod';
 import {
   RunDetailResponseSchema,
   RunsListResponseSchema,
+  RunSearchResponseSchema,
   type RunDetailResponse,
   type RunsListResponse,
+  type RunSearchResponse,
 } from './schemas/runs';
 import {
   AnalyticsEventsResponseSchema,
@@ -150,6 +152,17 @@ export const api = {
       const path = `/runs/${encodeURIComponent(id)}`;
       return dedupedFetchJson<unknown>(apiUrl(path), signal).then((payload) =>
         unwrapApiPayload(payload, apiUrl(path), RunDetailResponseSchema),
+      );
+    },
+    search: (
+      query: string,
+      options?: { limit?: number; signal?: AbortSignal },
+    ): Promise<RunSearchResponse> => {
+      const qs = new URLSearchParams({ q: query });
+      if (options?.limit !== undefined) qs.set('limit', String(options.limit));
+      const path = `/runs/search?${qs.toString()}`;
+      return dedupedFetchJson<unknown>(apiUrl(path), options?.signal).then((payload) =>
+        unwrapApiPayload(payload, apiUrl(path), RunSearchResponseSchema),
       );
     },
     issues: {

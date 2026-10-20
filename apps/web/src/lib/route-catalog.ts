@@ -117,6 +117,7 @@ export const ROUTE_CATALOG: RouteCatalogEntry[] = [
   r('GET', '/api/notifications', 'session', null, 'default'),
   r('GET', '/api/openapi', 'public', null, 'default'),
   r('GET', '/api/runs', 'session', { scopes: ['runs:read'] }, 'default'),
+  r('GET', '/api/runs/search', 'session', { scopes: ['runs:read'] }, 'default'),
   r('POST', '/api/runs', 'session', { role: 'analyst', scopes: ['runs:write'] }, 'default'),
   r('GET', '/api/runs/[id]', 'session', { scopes: ['runs:read'] }, 'default'),
   // Reserved policy: the destructive verb is pre-registered at maintainer so a
