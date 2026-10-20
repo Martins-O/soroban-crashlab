@@ -28,7 +28,8 @@ export type AuthClass = 'public' | 'session' | 'token';
 export type RateLimitClass = 'default' | 'strict' | 'lenient' | 'none';
 
 export interface RouteCapability {
-  role: UserRole;
+  /** Role required for role-gated routes; read-only scope-only routes omit it. */
+  role?: UserRole;
   scopes?: ApiTokenScope[];
 }
 
@@ -71,8 +72,10 @@ export const ROUTE_CATALOG: RouteCatalogEntry[] = [
   r('GET', '/api/auth/oidc/callback', 'public', null, 'default'),
   r('GET', '/api/auth/oidc/start', 'public', null, 'default'),
   r('POST', '/api/campaigns', 'session', { role: 'maintainer' }, 'default'),
+  r('GET', '/api/campaigns/[id]/fees', 'session', { scopes: ['runs:read'] }, 'default'),
   r('GET', '/api/capacity', 'public', null, 'default'),
   r('POST', '/api/capacity/usage', 'token', { role: 'analyst' }, 'default'),
+  r('POST', '/api/csp-report', 'public', null, 'strict'),
   r('GET', '/api/database/migrations', 'session', null, 'default'),
   r('POST', '/api/database/migrations', 'session', { role: 'analyst' }, 'default'),
   r('GET', '/api/health', 'public', null, 'none'),
@@ -119,6 +122,8 @@ export const ROUTE_CATALOG: RouteCatalogEntry[] = [
   r('GET', '/api/runs', 'session', { scopes: ['runs:read'] }, 'default'),
   r('POST', '/api/runs', 'session', { role: 'analyst', scopes: ['runs:write'] }, 'default'),
   r('GET', '/api/runs/[id]', 'session', { scopes: ['runs:read'] }, 'default'),
+  r('GET', '/api/runs/[id]/fee-summary', 'session', { scopes: ['runs:read'] }, 'default'),
+  r('GET', '/api/runs/[id]/clusters', 'session', { scopes: ['runs:read'] }, 'default'),
   // Reserved policy: the destructive verb is pre-registered at maintainer so a
   // future DELETE handler cannot land under the permissive fallback.
   r('DELETE', '/api/runs/[id]', 'session', { role: 'maintainer', scopes: ['runs:write'] }, 'default'),

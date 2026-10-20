@@ -5,6 +5,7 @@ import path from 'node:path';
 const routeFiles = [
   'analytics/chart-builder',
   'analytics/environment-matrix',
+  'campaigns/[id]',
   'campaign-cost-estimator',
   'dashboard',
   'integrations',

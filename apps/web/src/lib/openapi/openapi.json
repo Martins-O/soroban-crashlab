@@ -143,6 +143,9 @@
             },
             "type": "array"
           },
+          "campaignId": {
+            "type": "string"
+          },
           "corpusStats": {
             "items": {
               "properties": {
@@ -216,7 +219,51 @@
           "duration": {
             "type": "number"
           },
+          "expensiveFailure": {
+            "type": "boolean"
+          },
+          "expensiveSuccess": {
+            "type": "boolean"
+          },
+          "fee": {
+            "properties": {
+              "cpuInstructions": {
+                "type": "number"
+              },
+              "expensiveFailure": {
+                "type": "boolean"
+              },
+              "expensiveSuccess": {
+                "type": "boolean"
+              },
+              "feeWarnThreshold": {
+                "type": "number"
+              },
+              "inclusionFee": {
+                "type": "number"
+              },
+              "memoryBytes": {
+                "type": "number"
+              },
+              "minBuiltinEntries": {
+                "type": "number"
+              },
+              "minResourceFee": {
+                "type": "number"
+              },
+              "rentBumps": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "feeWarnThreshold": {
+            "type": "number"
+          },
           "finishedAt": {
+            "type": "string"
+          },
+          "fixtureName": {
             "type": "string"
           },
           "id": {
@@ -271,6 +318,20 @@
               "components",
               "stampedAt"
             ],
+            "type": "object"
+          },
+          "resourceUsage": {
+            "properties": {
+              "cpuInstructions": {
+                "type": "number"
+              },
+              "memoryBytes": {
+                "type": "number"
+              },
+              "minBuiltinEntries": {
+                "type": "number"
+              }
+            },
             "type": "object"
           },
           "seedCount": {
@@ -448,6 +509,9 @@
                   },
                   "type": "array"
                 },
+                "campaignId": {
+                  "type": "string"
+                },
                 "corpusStats": {
                   "items": {
                     "properties": {
@@ -521,7 +585,51 @@
                 "duration": {
                   "type": "number"
                 },
+                "expensiveFailure": {
+                  "type": "boolean"
+                },
+                "expensiveSuccess": {
+                  "type": "boolean"
+                },
+                "fee": {
+                  "properties": {
+                    "cpuInstructions": {
+                      "type": "number"
+                    },
+                    "expensiveFailure": {
+                      "type": "boolean"
+                    },
+                    "expensiveSuccess": {
+                      "type": "boolean"
+                    },
+                    "feeWarnThreshold": {
+                      "type": "number"
+                    },
+                    "inclusionFee": {
+                      "type": "number"
+                    },
+                    "memoryBytes": {
+                      "type": "number"
+                    },
+                    "minBuiltinEntries": {
+                      "type": "number"
+                    },
+                    "minResourceFee": {
+                      "type": "number"
+                    },
+                    "rentBumps": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "feeWarnThreshold": {
+                  "type": "number"
+                },
                 "finishedAt": {
+                  "type": "string"
+                },
+                "fixtureName": {
                   "type": "string"
                 },
                 "id": {
@@ -576,6 +684,20 @@
                     "components",
                     "stampedAt"
                   ],
+                  "type": "object"
+                },
+                "resourceUsage": {
+                  "properties": {
+                    "cpuInstructions": {
+                      "type": "number"
+                    },
+                    "memoryBytes": {
+                      "type": "number"
+                    },
+                    "minBuiltinEntries": {
+                      "type": "number"
+                    }
+                  },
                   "type": "object"
                 },
                 "seedCount": {
@@ -1213,6 +1335,92 @@
           }
         ],
         "summary": "Create a fuzz campaign",
+        "tags": [
+          "campaigns"
+        ]
+      }
+    },
+    "/api/campaigns/{id}/fees": {
+      "get": {
+        "description": "Server-aggregated cpu/memory/fee histograms, threshold crossings, top expensive fixtures and a bounded trend series. ?top=<1-50>&buckets=<1-50>&trendPoints=<2-500>; legacy pre-W5-A12 runs are reported in coverage.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            },
+            "description": "Success envelope { data, total? }"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "VALIDATION_ERROR",
+                      "type": "string"
+                    },
+                    "error": {
+                      "example": "Request validation failed.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "VALIDATION_ERROR"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "UNAUTHORIZED",
+                      "type": "string"
+                    },
+                    "error": {
+                      "example": "Authentication is required.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "UNAUTHORIZED"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "read"
+            ]
+          }
+        ],
+        "summary": "Campaign resource fee insight",
         "tags": [
           "campaigns"
         ]
@@ -2963,6 +3171,116 @@
           }
         ],
         "summary": "Add a run annotation",
+        "tags": [
+          "runs"
+        ]
+      }
+    },
+    "/api/runs/{id}/fee-summary": {
+      "get": {
+        "description": "Normalised W5-A12 fee envelope with a flat-metric fallback and an explicit fee-data-absent state for older runs.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessEnvelope"
+                }
+              }
+            },
+            "description": "Success envelope { data, total? }"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "RUN_ID_REQUIRED",
+                      "type": "string"
+                    },
+                    "error": {
+                      "example": "Run ID is required.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "RUN_ID_REQUIRED"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "UNAUTHORIZED",
+                      "type": "string"
+                    },
+                    "error": {
+                      "example": "Authentication is required.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "UNAUTHORIZED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "RUN_NOT_FOUND",
+                      "type": "string"
+                    },
+                    "error": {
+                      "example": "Run not found.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "code"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "RUN_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": [
+              "read"
+            ]
+          }
+        ],
+        "summary": "Per-run resource fee summary",
         "tags": [
           "runs"
         ]

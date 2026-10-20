@@ -5,7 +5,7 @@
  */
 import { createHash } from "crypto";
 import { redactArtifactText, redactText } from './redaction';
- *
+/**
  * Tenant-scoped (#1894): every artifact lives under
  * `org/<org>/project/<project>/artifacts/<id>`, and every accessor takes the
  * caller's `TenantScope`. There is no unscoped accessor.

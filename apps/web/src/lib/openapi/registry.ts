@@ -58,6 +58,10 @@ export const ROUTE_REGISTRY: RouteRegistryEntry[] = [
   r('GET', '/api/runs/{id}', 'bearer', 'Get a single run', ['runs'], ['RUN_NOT_FOUND', 'RUN_ID_REQUIRED', 'UNAUTHORIZED'], {
     scopes: ['read'],
   }),
+  r('GET', '/api/runs/{id}/fee-summary', 'bearer', 'Per-run resource fee summary', ['runs'], ['RUN_NOT_FOUND', 'RUN_ID_REQUIRED', 'UNAUTHORIZED'], {
+    scopes: ['read'],
+    description: 'Normalised W5-A12 fee envelope with a flat-metric fallback and an explicit fee-data-absent state for older runs.',
+  }),
   r('DELETE', '/api/runs/{id}', 'bearer-or-maintainer', 'Delete a run (maintainer)', ['runs'], ['RUN_NOT_FOUND', 'FORBIDDEN'], {
     scopes: ['write'],
   }),
@@ -75,6 +79,10 @@ export const ROUTE_REGISTRY: RouteRegistryEntry[] = [
   r('GET', '/api/artifacts/{id}', 'bearer', 'Get an artifact', ['artifacts'], ['NOT_FOUND'], { scopes: ['read'] }),
   r('POST', '/api/artifacts/validate', 'bearer', 'Validate an artifact bundle', ['artifacts'], ['ARTIFACT_INVALID_BUNDLE', 'ARTIFACT_INVALID_JSON'], { scopes: ['write'] }),
   r('GET', '/api/campaigns', 'bearer-or-maintainer', 'List fuzz campaigns', ['campaigns'], ['UNAUTHORIZED'], { paginated: true, scopes: ['read'] }),
+  r('GET', '/api/campaigns/{id}/fees', 'bearer', 'Campaign resource fee insight', ['campaigns'], ['UNAUTHORIZED', 'VALIDATION_ERROR'], {
+    scopes: ['read'],
+    description: 'Server-aggregated cpu/memory/fee histograms, threshold crossings, top expensive fixtures and a bounded trend series. ?top=<1-50>&buckets=<1-50>&trendPoints=<2-500>; legacy pre-W5-A12 runs are reported in coverage.',
+  }),
   r('POST', '/api/campaigns', 'bearer-or-maintainer', 'Create a fuzz campaign', ['campaigns'], ['VALIDATION_ERROR', 'FORBIDDEN', 'IDEMPOTENCY_KEY_INVALID', 'IDEMPOTENCY_KEY_REUSED', 'QUOTA_EXCEEDED', 'SCHEDULING_WINDOW_CLOSED', 'QUOTA_OVERRIDE_FORBIDDEN'], {
     scopes: ['write'],
     description: 'Admission checks the class scheduling window and capacity quotas (429 QUOTA_EXCEEDED / 403 SCHEDULING_WINDOW_CLOSED, both with Retry-After). Maintainers may bypass with X-CrashLab-Quota-Override: <reason>; the bypass is audited.',

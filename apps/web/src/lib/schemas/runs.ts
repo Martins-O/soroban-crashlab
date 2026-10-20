@@ -67,19 +67,42 @@ export const CorpusStatPointSchema = z.object({
   coveragePct: z.number(),
 }).passthrough();
 
+export const RunResourceUsageSchema = z.object({
+  cpuInstructions: z.number().optional(),
+  memoryBytes: z.number().optional(),
+  minBuiltinEntries: z.number().optional(),
+}).passthrough();
+
+export const RunFeeSimulationSchema = RunResourceUsageSchema.extend({
+  minResourceFee: z.number().optional(),
+  inclusionFee: z.number().optional(),
+  rentBumps: z.number().optional(),
+  feeWarnThreshold: z.number().optional(),
+  expensiveSuccess: z.boolean().optional(),
+  expensiveFailure: z.boolean().optional(),
+}).passthrough();
+
 export const FuzzingRunSchema = z.object({
   id: z.string(),
   parentId: z.string().optional(),
   seedList: z.array(z.number()).optional(),
+  campaignId: z.string().optional(),
+  fixtureName: z.string().optional(),
   status: RunStatusSchema,
   area: RunAreaSchema,
   severity: RunSeveritySchema,
   duration: z.number(),
   seedCount: z.number(),
   crashDetail: CrashDetailSchema.nullable(),
+  // Flat metrics remain for pre-W5-A12 runs; the envelope is additive.
   cpuInstructions: z.number(),
   memoryBytes: z.number(),
   minResourceFee: z.number(),
+  resourceUsage: RunResourceUsageSchema.optional(),
+  fee: RunFeeSimulationSchema.optional(),
+  feeWarnThreshold: z.number().optional(),
+  expensiveSuccess: z.boolean().optional(),
+  expensiveFailure: z.boolean().optional(),
   queuedAt: z.string().optional(),
   startedAt: z.string().optional(),
   finishedAt: z.string().optional(),

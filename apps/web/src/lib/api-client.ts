@@ -25,6 +25,7 @@ import {
   WebhookHistoryResponseSchema,
   WebhooksResponseSchema,
 } from './schemas/api';
+import { CampaignFeeInsightSchema, RunFeeSummarySchema } from './schemas/fees';
 
 export type { ArtifactMetadata, NotificationFeedItem } from './schemas/api';
 
@@ -190,6 +191,12 @@ export const api = {
           signal,
         }),
     },
+    feeSummary: (runId: string, signal?: AbortSignal) =>
+      apiFetch(
+        `/runs/${encodeURIComponent(runId)}/fee-summary`,
+        RunFeeSummarySchema,
+        { signal },
+      ),
     annotations: {
       list: (runId: string, signal?: AbortSignal) =>
         apiFetch(
@@ -257,6 +264,28 @@ export const api = {
         body: JSON.stringify(config),
         signal,
       }),
+    /**
+     * Server-aggregated resource fee insight for one campaign (#1883).
+     * Returns histograms, threshold crossings, top expensive fixtures and a
+     * bounded trend series. Pre-W5-A12 runs are reported in `coverage`.
+     */
+    fees: (
+      id: string,
+      options?: {
+        top?: number;
+        buckets?: number;
+        trendPoints?: number;
+        signal?: AbortSignal;
+      },
+    ) => {
+      const qs = new URLSearchParams();
+      if (options?.top !== undefined) qs.set('top', String(options.top));
+      if (options?.buckets !== undefined) qs.set('buckets', String(options.buckets));
+      if (options?.trendPoints !== undefined) qs.set('trendPoints', String(options.trendPoints));
+      const query = qs.toString();
+      const path = `/campaigns/${encodeURIComponent(id)}/fees${query ? `?${query}` : ''}`;
+      return apiFetch(path, CampaignFeeInsightSchema, { signal: options?.signal });
+    },
   },
   notifications: {
     list: (signal?: AbortSignal) =>
