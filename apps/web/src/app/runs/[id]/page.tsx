@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 import BreadcrumbNav from '@/components/BreadcrumbNav';
 import RunDetailAutoRefresh from './RunDetailAutoRefresh';
@@ -8,16 +9,21 @@ import { buildCallSequenceForRun } from '../../mock-call-sequence';
 import RunIssueLinkPage53 from '../../../features/runs/add-run-issue-link-page-53';
 import RunStatusTimeline from '../../RunStatusTimeline';
 import DownloadArtifactsButton from './DownloadArtifactsButton';
-import ContractStateDiffView from '../../components/ContractStateDiffView';
 import { summarizeStateChanges } from '../../components/state-diff-utils';
-import RunSequenceDiagram from './RunSequenceDiagram';
 import { summarizeCallSequence } from './run-sequence-diagram-utils';
-import AddRunReplayHistoryWithTimestamps from '../../../features/runs/add-run-replay-history-with-timestamps';
 import RunMetadataEditorWrapper from './RunMetadataEditorWrapper';
-import RunAnnotationThreads from './annotation-threads/RunAnnotationThreads';
 import SwipeNavigationWrapper from '../swipe/SwipeNavigationWrapper';
 import { RunFeeSummaryChip } from './RunFeeSummaryChip';
 import { buildRunFeeSummary } from '../../resource-fee-insight-utils';
+
+// Below-the-fold interactive views: split their client chunks out of the run
+// detail first-load bundle. They stream in with the rest of the page (#1881).
+const ContractStateDiffView = nextDynamic(() => import('../../components/ContractStateDiffView'));
+const RunSequenceDiagram = nextDynamic(() => import('./RunSequenceDiagram'));
+const AddRunReplayHistoryWithTimestamps = nextDynamic(
+  () => import('../../../features/runs/add-run-replay-history-with-timestamps'),
+);
+const RunAnnotationThreads = nextDynamic(() => import('./annotation-threads/RunAnnotationThreads'));
 
 import { absoluteShort } from '../../utils/datetime';
 
@@ -98,7 +104,7 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
                     />
                 </div>
 
-                <RunMetadataEditorWrapper run={run} />
+                <RunMetadataEditorWrapper run={{ id: run.id, tags: run.tags ?? [] }} />
 
                 <RunIssueLinkPage53 issues={run.associatedIssues ?? []} />
 
