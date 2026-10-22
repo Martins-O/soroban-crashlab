@@ -20,6 +20,12 @@ interface BulkActionsProps {
   onAction: (action: BulkAction, runIds: string[], data?: Record<string, unknown>) => void;
   onClearSelection: () => void;
   disabled?: boolean;
+  /**
+   * Total number of selected runs (#1875). A query-based "select all matching"
+   * selection can cover rows that are not loaded in memory, so the toolbar must
+   * show the full count rather than `selectedRuns.length`.
+   */
+  selectionCount?: number;
 }
 
 const BULK_ACTIONS: BulkActionType[] = [
@@ -36,7 +42,9 @@ const BulkActionsForRuns: React.FC<BulkActionsProps> = ({
   onAction,
   onClearSelection,
   disabled = false,
+  selectionCount,
 }) => {
+  const totalSelected = selectionCount ?? selectedRuns.length;
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<BulkActionType | null>(null);
   const [actionData, setActionData] = useState<Record<string, string | boolean>>({});
@@ -214,7 +222,7 @@ const BulkActionsForRuns: React.FC<BulkActionsProps> = ({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-              {selectedRuns.length} run{selectedRuns.length !== 1 ? 's' : ''} selected
+              {totalSelected} run{totalSelected !== 1 ? 's' : ''} selected
             </span>
             <button type="button" onClick={onClearSelection} className="btn-ghost text-sm h-8 px-3">
               Clear selection
@@ -281,7 +289,7 @@ const BulkActionsForRuns: React.FC<BulkActionsProps> = ({
 
       {/* Delete confirmation dialog */}
       {(() => {
-        const cfg = getConfirmDialogConfig('delete-runs', selectedRuns.length);
+        const cfg = getConfirmDialogConfig('delete-runs', totalSelected);
         return (
           <ConfirmDialog
             isOpen={deleteConfirmOpen}

@@ -10,6 +10,8 @@ import { redactArtifactText, redactText } from './redaction';
  * `org/<org>/project/<project>/artifacts/<id>`, and every accessor takes the
  * caller's `TenantScope`. There is no unscoped accessor.
  */
+import { createHash } from "crypto";
+import { redactArtifactText, redactText } from './redaction';
 import { ScopedRepository, createMapBackend } from './tenancy/scoped-repository';
 import type { TenantScope } from './tenancy/tenant-scope';
 
